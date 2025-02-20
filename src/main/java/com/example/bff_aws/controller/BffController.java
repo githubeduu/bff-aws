@@ -21,11 +21,14 @@ public class BffController {
     @Value("${microservice.pacientes.base.url}")
     private String pacientesServiceUrl;
 
+    @Value("${microservice.reservas.base.url}")
+    private String reservasServiceUrl;
+
     public BffController(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
-    // GET: Obtener todos los libros
+    // GET: Obtener todos los pacientes
     @GetMapping("/pacientes")
     public ResponseEntity<String> getPacientes() {
         String url = pacientesServiceUrl;
@@ -88,4 +91,26 @@ public class BffController {
         restTemplate.delete(url);
         return "Paciente eliminado con ID: " + id;
     }
-}
+
+
+
+
+    @PostMapping("/reservas/horaMedica")
+    public ResponseEntity<String> reservarCita(@RequestBody String reservaJson) {
+        String url = reservasServiceUrl + "/horaMedica";
+    
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(reservaJson, headers);
+    
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+            return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body("Error del cliente: " + e.getMessage());
+        } catch (HttpServerErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body("Error del servidor: " + e.getMessage());
+        }
+    }
+    
+    }
